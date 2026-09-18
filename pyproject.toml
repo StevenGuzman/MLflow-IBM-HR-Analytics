@@ -1,0 +1,17 @@
+[project]
+name = "mlflow-ibm-hr-analytics"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Laura Hoyos", email = "lauramh922@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = []
+
+[project.scripts]
+mlflow-ibm-hr-analytics = "mlflow_ibm_hr_analytics:main"
+
+[build-system]
+requires = ["uv_build>=0.12.12,<0.13.0"]
+build-backend = "uv_build"
