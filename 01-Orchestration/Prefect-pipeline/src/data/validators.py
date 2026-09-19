@@ -31,7 +31,7 @@ def validate_data(df: pd.DataFrame) -> pd.DataFrame:
         logger.warning(f"High null percentage: {null_pct:.2f}%")
 
     #Quitando columnas que no aportan al modelo o analisis.
-    df = df.drop(columns=['EmployeeCount','StandardHours','Over18','EmployeeNumber',],axis = 1)
+    df = df.drop(columns=['EmployeeCount','StandardHours','Over18','EmployeeNumber',])
    
     logger.info(f"Data loaded: {len(df)} rows, {null_pct:.2f}% nulls") #Mensaje para saber cuantas filas se cargaron y el porcentaje de nulos
 

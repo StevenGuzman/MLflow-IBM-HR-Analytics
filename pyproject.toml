@@ -7,7 +7,17 @@ authors = [
     { name = "Laura Hoyos", email = "lauramh922@gmail.com" }
 ]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "ipykernel>=7.3.0",
+    "kagglehub>=1.0.2",
+    "mlflow>=3.16.1",
+    "openai>=3.16.2",
+    "optuna>=5.0.0",
+    "pandas>=3.0.6",
+    "prefect>=3.8.6",
+    "scikit-learn>=1.9.1",
+    "xgboost>=3.4.1",
+]
 
 [project.scripts]
 mlflow-ibm-hr-analytics = "mlflow_ibm_hr_analytics:main"

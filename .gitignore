@@ -233,7 +233,8 @@ settings_local.py
 
 
 # mlflow
-#models/
-03-Orchestrarion/mlruns/
-
-03-Orchestration/Prefect-pipelines/models/
+mlruns/
+mlflow.db
+01-Orchestration/Prefect-pipeline/mlflow.db
+01-Orchestration/Prefect-pipeline/mlruns/
+01-Orchestration/Prefect-pipeline/models/

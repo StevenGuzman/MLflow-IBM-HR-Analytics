@@ -7,15 +7,17 @@ from typing import Tuple, Optional
 import pandas as pd
 from sklearn.feature_extraction import DictVectorizer
 from prefect import task, get_run_logger
-from prefect.artifacts import create_table_artifact
-
-from ..config import CATEGORICAL_FEATURES
 
 
-@task(name="create_features", description="Create feature matrix using DictVectorizer")
-# Devuelve X: matriz de variables para el modelo.
-# dv: el vectorizador utilizado.
-def create_features(df: pd.DataFrame, dv: Optional[DictVectorizer] = None) -> Tuple[any, DictVectorizer]:
+@task(
+    name="create_features",
+    description="Create feature matrix using DictVectorizer"
+)
+def create_features(
+    df: pd.DataFrame,
+    dv: Optional[DictVectorizer] = None
+) -> Tuple[any, DictVectorizer]:
+
     """
     Create feature matrix from DataFrame.
 
@@ -26,35 +28,62 @@ def create_features(df: pd.DataFrame, dv: Optional[DictVectorizer] = None) -> Tu
     Returns:
         Tuple of (feature matrix, DictVectorizer)
     """
+
     logger = get_run_logger()
+
     
-    # Crear feature PU_DO combinado
+    # 1. Crear una copia para no modificar el DataFrame original
     df_features = df.copy()
-    df_features['PU_DO'] = df_features['PULocationID'].astype(str) + '_' + df_features['DOLocationID'].astype(str)
-    
-    # Usar solo PU_DO y trip_distance
-    #Convierte las columnas en listas de diccionarios para preparar los datos para DictVectorizer.
-    dicts = df_features[['PU_DO', 'trip_distance']].to_dict(orient='records')
-    
-    logger.info(f"Created {len(dicts)} feature dictionaries with PU_DO combined")
-   #DictVectorizer convierte variables categóricas en variables numéricas mediante one-hot encoding.
+
+    # 2. Convertir la variable objetivo Attrition
+    #    No se incluye en las features
+    if "Attrition" in df_features.columns:
+        df_features = df_features.drop(columns=["Attrition"])
+
+    # 3. Convertir variables categóricas a string
+
+    columnas_categoricas = [
+        "BusinessTravel",
+        "Department",
+        "Gender",
+        "MaritalStatus",
+        "EducationField",
+        "JobRole",
+        "OverTime"
+    ]
+
+    for col in columnas_categoricas:
+        if col in df_features.columns:
+            df_features[col] = df_features[col].astype(str)
+
+    # 4. Convertir el DataFrame a diccionarios
+
+    dicts = df_features.to_dict(orient="records")
+
+    logger.info(
+        f"Created {len(dicts)} feature dictionaries"
+    )
+
+    # 5. Crear y entrenar DictVectorizer
+
     if dv is None:
+
         dv = DictVectorizer()
+
         X = dv.fit_transform(dicts)
-        
-        # Create artifact with feature information
-        feature_info = [
-            ["Total Features", X.shape[1]],
-            ["Feature Names Sample", ", ".join(dv.feature_names_[:5]) + "..."],
-            ["Sparse Matrix Shape", f"{X.shape[0]} x {X.shape[1]}"]
-        ]
-        #Se esta creando un tabla artifact de Prefect con información sobre las variables.
-        create_table_artifact(
-            key="feature-info",
-            table=feature_info,
-            description="Feature matrix information"
+
+        logger.info(
+            f"DictVectorizer fitted with {X.shape[1]} features"
         )
+
+    # 6. Utilizar DictVectorizer ya entrenado
+
     else:
+
         X = dv.transform(dicts)
+
+        logger.info(
+            f"Transformed data using existing DictVectorizer"
+        )
 
     return X, dv

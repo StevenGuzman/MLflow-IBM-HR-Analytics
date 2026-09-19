@@ -1,0 +1,39 @@
+"""
+Configuration module for the pipeline.
+"""
+
+from .mlflow_setup import setup_mlflow
+from .constants import (
+    MIN_RECORDS,
+    NULL_THRESHOLD,
+    OPTUNA_TRIALS,
+    NUM_BOOST_ROUNDS,
+    EARLY_STOPPING_ROUNDS,
+    MLFLOW_EXPERIMENT_NAME,
+    MLFLOW_DEFAULT_URI,
+    MLFLOW_UI_URL,
+    CHAMPION_ALIAS,
+    CANDIDATE_ALIAS,
+    #CATEGORICAL_FEATURES,
+    TARGET_COLUMN,
+    MIN_DURATION,
+    MAX_DURATION
+)
+
+__all__ = [
+    'setup_mlflow',
+    'MIN_RECORDS',
+    'NULL_THRESHOLD',
+    'OPTUNA_TRIALS',
+    'NUM_BOOST_ROUNDS',
+    'EARLY_STOPPING_ROUNDS',
+    'MLFLOW_EXPERIMENT_NAME',
+    'MLFLOW_DEFAULT_URI',
+    'MLFLOW_UI_URL',
+    'CHAMPION_ALIAS',
+    'CANDIDATE_ALIAS',
+    #'CATEGORICAL_FEATURES',
+    'TARGET_COLUMN',
+    'MIN_DURATION',
+    'MAX_DURATION'
+]
