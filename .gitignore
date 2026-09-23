@@ -238,3 +238,12 @@ mlflow.db
 01-Orchestration/Prefect-pipeline/mlflow.db
 01-Orchestration/Prefect-pipeline/mlruns/
 01-Orchestration/Prefect-pipeline/models/
+
+# MLflow local runs
+mlruns/
+.trash/
+
+# Python cache
+__pycache__/
+*.pyc
+.venv/
