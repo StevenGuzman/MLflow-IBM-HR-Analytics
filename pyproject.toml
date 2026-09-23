@@ -1,7 +1,7 @@
 [project]
 name = "mlflow-ibm-hr-analytics"
 version = "0.1.0"
-description = "Add your description here"
+description = "Proyecto de analítica de RRHH usando MLflow y Prefect"
 readme = "README.md"
 authors = [
     { name = "Laura Hoyos", email = "lauramh922@gmail.com" }
