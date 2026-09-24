@@ -13,6 +13,7 @@ from src.config.mlflow_setup import setup_mlflow
 from src.config.constants import (TARGET_COLUMN,MLFLOW_EXPERIMENT_NAME,MLFLOW_UI_URL)
 from src.data.loaders import read_dataframe
 from src.data.validators import validate_data
+from src.data.split_data import split_data
 from src.features.engineering import create_features
 from src.models.optimization import optimize_hyperparameters,train_model
 from src.models.model_registry import register_best_model
@@ -40,13 +41,13 @@ def attrition_prediction_flow() -> str:
     logger = get_run_logger()
 
     # Load training data
-    df_train = read_dataframe()
+    df = read_dataframe()
     
     # Validate training data
-    df_train = validate_data(df_train)
+    df = validate_data(df)
 
-    # Load validation data
-    df_val = read_dataframe()
+    # Split data into training and validation sets
+    df_train, df_val = split_data(df)
 
     # Create features
     X_train, dv = create_features(df_train)
