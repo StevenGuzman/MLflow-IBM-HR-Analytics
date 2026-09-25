@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rotación de personal</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --surface-2: #f0f2f5;
+    --border: #e3e6eb;
+    --text: #1d2330;
+    --muted: #6b7280;
+    --accent: #4f46e5;
+    --accent-soft: #eef0ff;
+    --risk-high: #dc2626;
+    --risk-high-soft: #fdecec;
+    --risk-mid: #d97706;
+    --risk-low: #059669;
+    --risk-low-soft: #e6f6f0;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .08);
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1218;
+      --surface: #171b23;
+      --surface-2: #1f2430;
+      --border: #2a303c;
+      --text: #e6e8ec;
+      --muted: #9aa1ad;
+      --accent: #818cf8;
+      --accent-soft: #23264a;
+      --risk-high: #f87171;
+      --risk-high-soft: #3a1d1f;
+      --risk-mid: #fbbf24;
+      --risk-low: #34d399;
+      --risk-low-soft: #16302a;
+      --shadow: 0 1px 3px rgba(0, 0, 0, .4);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
+
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  h1 { margin: 0; font-size: 1.6rem; letter-spacing: -.02em; }
+  .subtitle { margin: 4px 0 0; color: var(--muted); font-size: .9rem; }
+
+  button {
+    font: inherit; cursor: pointer; border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; background: var(--surface); color: var(--text); transition: background .15s, border-color .15s;
+  }
+  button:hover { background: var(--surface-2); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  button.primary:hover { filter: brightness(1.08); }
+  button.icon { padding: 6px 10px; font-size: .85rem; }
+  button.danger:hover { color: var(--risk-high); border-color: var(--risk-high); }
+  button:disabled { opacity: .6; cursor: progress; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .stat { padding: 18px 20px; }
+  .stat .label { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+  .stat .value { font-size: 1.8rem; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+  .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .toolbar h2 { margin: 0; font-size: 1rem; }
+  input, select {
+    font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 10px; width: 100%;
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+  .search { max-width: 260px; }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 12px 20px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; background: var(--surface-2); }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: var(--surface-2); }
+  .name { font-weight: 600; }
+  .sub { color: var(--muted); font-size: .85rem; }
+  .actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+  .risk { display: flex; align-items: center; gap: 10px; min-width: 150px; }
+  .bar { flex: 1; height: 6px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+  .bar span { display: block; height: 100%; border-radius: 99px; }
+  .pct { font-variant-numeric: tabular-nums; font-weight: 600; width: 44px; text-align: right; }
+
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 99px; font-size: .8rem; font-weight: 600; }
+  .badge.yes { background: var(--risk-high-soft); color: var(--risk-high); }
+  .badge.no { background: var(--risk-low-soft); color: var(--risk-low); }
+
+  .empty { padding: 56px 20px; text-align: center; color: var(--muted); }
+  .empty strong { display: block; color: var(--text); font-size: 1.05rem; margin-bottom: 4px; }
+
+  dialog {
+    border: 1px solid var(--border); border-radius: 16px; padding: 0; width: min(760px, calc(100% - 32px));
+    background: var(--surface); color: var(--text); box-shadow: 0 20px 50px rgba(0, 0, 0, .25);
+  }
+  dialog::backdrop { background: rgba(15, 18, 24, .5); backdrop-filter: blur(2px); }
+  .modal-head, .modal-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 24px; }
+  .modal-head { border-bottom: 1px solid var(--border); }
+  .modal-head h3 { margin: 0; font-size: 1.1rem; }
+  .modal-foot { border-top: 1px solid var(--border); justify-content: flex-end; }
+  .modal-body { padding: 8px 24px 20px; max-height: 65vh; overflow-y: auto; }
+  fieldset { border: 0; padding: 0; margin: 16px 0 0; }
+  legend { font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: var(--accent); margin-bottom: 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px 16px; }
+  label { display: block; font-size: .82rem; color: var(--muted); margin-bottom: 4px; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px); opacity: 0;
+    background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 10px;
+    box-shadow: var(--shadow); transition: all .25s; pointer-events: none; max-width: calc(100% - 32px);
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <h1>Rotación de personal</h1>
+      <p class="subtitle" id="subtitle">IBM HR Analytics · predicción con el modelo champion de MLflow</p>
+    </div>
+    <button class="primary" id="btn-new">+ Nuevo empleado</button>
+  </header>
+
+  <section class="stats">
+    <div class="card stat"><div class="label">Empleados</div><div class="value" id="stat-total">0</div></div>
+    <div class="card stat"><div class="label">En riesgo de rotación</div><div class="value" id="stat-risk" style="color: var(--risk-high)">0</div></div>
+    <div class="card stat"><div class="label">Probabilidad promedio</div><div class="value" id="stat-avg">–</div></div>
+  </section>
+
+  <section class="card">
+    <div class="toolbar">
+      <h2>Empleados evaluados</h2>
+      <input class="search" id="search" type="search" placeholder="Buscar por nombre, área o rol…">
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Empleado</th><th>Edad</th><th>Horas extra</th><th>Riesgo</th><th>Predicción</th><th></th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="empty" hidden>
+      <strong>Aún no hay empleados</strong>
+      Agrega uno para calcular su probabilidad de rotación.
+    </div>
+  </section>
+</div>
+
+<dialog id="modal">
+  <form id="form" method="dialog">
+    <div class="modal-head">
+      <h3 id="modal-title">Nuevo empleado</h3>
+      <button type="button" class="icon" data-close aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body" id="fields"></div>
+    <div class="modal-foot">
+      <button type="button" data-close>Cancelar</button>
+      <button type="submit" class="primary" id="btn-save">Guardar y predecir</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SCALE4 = { 1: "Bajo", 2: "Medio", 3: "Alto", 4: "Muy alto" };
+  const EDUCATION = { 1: "Sin universidad", 2: "Técnico", 3: "Pregrado", 4: "Maestría", 5: "Doctorado" };
+  const WLB = { 1: "Mala", 2: "Buena", 3: "Mejor", 4: "Excelente" };
+  const RATING = { 1: "Bajo", 2: "Bueno", 3: "Excelente", 4: "Sobresaliente" };
+  const range = (a, b) => Object.fromEntries(Array.from({ length: b - a + 1 }, (_, i) => [a + i, a + i]));
+
+  // [campo, etiqueta, opciones (objeto valor->texto) o null para número, valor por defecto]
+  const SECTIONS = [
+    ["Datos personales", [
+      ["Name", "Nombre", "text", ""],
+      ["Age", "Edad", null, 35],
+      ["Gender", "Género", { Female: "Femenino", Male: "Masculino" }, "Female"],
+      ["MaritalStatus", "Estado civil", { Single: "Soltero/a", Married: "Casado/a", Divorced: "Divorciado/a" }, "Single"],
+      ["DistanceFromHome", "Distancia a casa (km)", null, 5],
+      ["Education", "Educación", EDUCATION, 3],
+      ["EducationField", "Área de estudio", { "Life Sciences": "Ciencias de la vida", Medical: "Medicina", Marketing: "Marketing", "Technical Degree": "Técnico", "Human Resources": "Recursos humanos", Other: "Otro" }, "Life Sciences"],
+    ]],
+    ["Puesto", [
+      ["Department", "Departamento", { "Research & Development": "Investigación y desarrollo", Sales: "Ventas", "Human Resources": "Recursos humanos" }, "Research & Development"],
+      ["JobRole", "Rol", { "Sales Executive": "Ejecutivo de ventas", "Research Scientist": "Científico investigador", "Laboratory Technician": "Técnico de laboratorio", "Manufacturing Director": "Director de manufactura", "Healthcare Representative": "Representante de salud", Manager: "Gerente", "Sales Representative": "Representante de ventas", "Research Director": "Director de investigación", "Human Resources": "Recursos humanos" }, "Research Scientist"],
+      ["JobLevel", "Nivel del cargo", range(1, 5), 2],
+      ["BusinessTravel", "Viajes de trabajo", { "Non-Travel": "No viaja", Travel_Rarely: "Ocasionalmente", Travel_Frequently: "Frecuentemente" }, "Travel_Rarely"],
+      ["OverTime", "Horas extra", { No: "No", Yes: "Sí" }, "No"],
+      ["JobInvolvement", "Compromiso con el trabajo", SCALE4, 3],
+      ["PerformanceRating", "Evaluación de desempeño", RATING, 3],
+    ]],
+    ["Compensación", [
+      ["MonthlyIncome", "Ingreso mensual", null, 5000],
+      ["MonthlyRate", "Tarifa mensual", null, 14000],
+      ["DailyRate", "Tarifa diaria", null, 800],
+      ["HourlyRate", "Tarifa por hora", null, 65],
+      ["PercentSalaryHike", "Aumento salarial (%)", null, 14],
+      ["StockOptionLevel", "Nivel de acciones", range(0, 3), 1],
+    ]],
+    ["Satisfacción", [
+      ["JobSatisfaction", "Con el trabajo", SCALE4, 3],
+      ["EnvironmentSatisfaction", "Con el ambiente", SCALE4, 3],
+      ["RelationshipSatisfaction", "Con las relaciones", SCALE4, 3],
+      ["WorkLifeBalance", "Balance vida-trabajo", WLB, 3],
+    ]],
+    ["Trayectoria (años)", [
+      ["TotalWorkingYears", "Años trabajando", null, 10],
+      ["NumCompaniesWorked", "Empresas anteriores", null, 2],
+      ["YearsAtCompany", "En la empresa", null, 5],
+      ["YearsInCurrentRole", "En el rol actual", null, 3],
+      ["YearsSinceLastPromotion", "Desde último ascenso", null, 1],
+      ["YearsWithCurrManager", "Con el jefe actual", null, 3],
+      ["TrainingTimesLastYear", "Capacitaciones último año", null, 3],
+    ]],
+  ];
+  const FIELDS = SECTIONS.flatMap(([, fields]) => fields);
+  const LABELS = Object.fromEntries(FIELDS.filter(f => f[2] && typeof f[2] === "object").map(([k, , o]) => [k, o]));
+
+  const $ = id => document.getElementById(id);
+  const modal = $("modal"), form = $("form");
+  let employees = [], editingId = null;
+
+  const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const riskColor = p => p >= 0.5 ? "var(--risk-high)" : p >= 0.25 ? "var(--risk-mid)" : "var(--risk-low)";
+
+  function toast(msg) {
+    const t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => t.classList.remove("show"), 3500);
+  }
+
+  async function api(path, options = {}) {
+    const res = await fetch(path, { headers: { "Content-Type": "application/json" }, ...options });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      const detail = Array.isArray(body.detail)
+        ? body.detail.map(d => `${d.loc.at(-1)}: ${d.msg}`).join(" · ")
+        : body.detail || res.statusText;
+      throw new Error(detail);
+    }
+    return res.status === 204 ? null : res.json();
+  }
+
+  function buildForm() {
+    $("fields").innerHTML = SECTIONS.map(([title, fields]) => `
+      <fieldset><legend>${title}</legend><div class="grid">
+        ${fields.map(([key, label, opts]) => `
+          <div><label for="f-${key}">${label}</label>
+          ${opts && typeof opts === "object"
+            ? `<select id="f-${key}" name="${key}">${Object.entries(opts).map(([v, t]) => `<option value="${escapeHtml(v)}">${t}</option>`).join("")}</select>`
+            : `<input id="f-${key}" name="${key}" type="${opts === "text" ? "text" : "number"}" ${opts === "text" ? 'maxlength="100"' : 'min="0" step="1"'} required>`}
+          </div>`).join("")}
+      </div></fieldset>`).join("");
+  }
+
+  function openModal(emp = null) {
+    editingId = emp ? emp.id : null;
+    $("modal-title").textContent = emp ? `Editar · ${emp.Name}` : "Nuevo empleado";
+    const values = emp ? { Name: emp.Name, ...emp.data } : Object.fromEntries(FIELDS.map(([k, , , d]) => [k, d]));
+    for (const [key] of FIELDS) form.elements[key].value = values[key];
+    modal.showModal();
+    form.elements.Name.focus();
+  }
+
+  function render() {
+    const q = $("search").value.trim().toLowerCase();
+    const list = employees.filter(e =>
+      [e.Name, e.data.Department, e.data.JobRole, LABELS.Department[e.data.Department], LABELS.JobRole[e.data.JobRole]]
+        .some(v => String(v).toLowerCase().includes(q)));
+
+    $("rows").innerHTML = list.map(e => {
+      const p = e.attrition_probability;
+      return `<tr>
+        <td><div class="name">${escapeHtml(e.Name)}</div>
+            <div class="sub">${LABELS.JobRole[e.data.JobRole]} · ${LABELS.Department[e.data.Department]}</div></td>
+        <td>${e.data.Age}</td>
+        <td>${e.data.OverTime === "Yes" ? "Sí" : "No"}</td>
+        <td><div class="risk"><div class="bar"><span style="width:${(p * 100).toFixed(0)}%;background:${riskColor(p)}"></span></div>
+            <span class="pct">${(p * 100).toFixed(0)}%</span></div></td>
+        <td><span class="badge ${e.attrition === "Yes" ? "yes" : "no"}">${e.attrition === "Yes" ? "Se iría" : "Se queda"}</span></td>
+        <td><div class="actions">
+          <button class="icon" data-edit="${e.id}">Editar</button>
+          <button class="icon danger" data-delete="${e.id}">Eliminar</button>
+        </div></td>
+      </tr>`;
+    }).join("");
+
+    $("empty").hidden = employees.length > 0;
+    $("stat-total").textContent = employees.length;
+    $("stat-risk").textContent = employees.filter(e => e.attrition === "Yes").length;
+    $("stat-avg").textContent = employees.length
+      ? `${(employees.reduce((s, e) => s + e.attrition_probability, 0) / employees.length * 100).toFixed(0)}%`
+      : "–";
+    if (employees.length) {
+      $("subtitle").textContent = `IBM HR Analytics · modelo champion v${employees[0].model_version} · umbral ${employees[0].threshold * 100}%`;
+    }
+  }
+
+  async function load() {
+    try {
+      employees = await api("/employees");
+      render();
+    } catch (err) {
+      toast(`No se pudo cargar la lista: ${err.message}`);
+    }
+  }
+
+  form.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const payload = {};
+    for (const [key, , opts] of FIELDS) {
+      const v = form.elements[key].value;
+      const numeric = opts === null || (typeof opts === "object" && !isNaN(Object.keys(opts)[0]));
+      payload[key] = numeric ? Number(v) : v;
+    }
+    const btn = $("btn-save");
+    btn.disabled = true;
+    btn.textContent = "Calculando…";
+    try {
+      const saved = await api(editingId ? `/employees/${editingId}` : "/employees", {
+        method: editingId ? "PUT" : "POST",
+        body: JSON.stringify(payload),
+      });
+      modal.close();
+      toast(`${saved.Name}: ${(saved.attrition_probability * 100).toFixed(0)}% de probabilidad de rotación`);
+      await load();
+    } catch (err) {
+      toast(`Error: ${err.message}`);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Guardar y predecir";
+    }
+  });
+
+  document.addEventListener("click", async ev => {
+    const t = ev.target;
+    if (t.closest("[data-close]")) modal.close();
+    if (t.id === "btn-new") openModal();
+    if (t.dataset.edit) openModal(employees.find(e => e.id === Number(t.dataset.edit)));
+    if (t.dataset.delete) {
+      const emp = employees.find(e => e.id === Number(t.dataset.delete));
+      if (!confirm(`¿Eliminar a ${emp.Name}?`)) return;
+      try {
+        await api(`/employees/${emp.id}`, { method: "DELETE" });
+        toast(`${emp.Name} eliminado`);
+        await load();
+      } catch (err) {
+        toast(`Error: ${err.message}`);
+      }
+    }
+  });
+
+  $("search").addEventListener("input", render);
+  buildForm();
+  load();
+</script>
+</body>
+</html>

@@ -40,11 +40,12 @@ RUN uv sync --frozen --no-dev --no-install-project
  
  
 COPY 01-Orchestration/ ./01-Orchestration/
+COPY 02-Deployment/ ./02-Deployment/
  
 WORKDIR /workspace
  
  
-EXPOSE 4200 5000
+EXPOSE 4200 5000 8000
  
 CMD ["python", "/app/01-Orchestration/Prefect-pipeline/pipeline.py"]
  

@@ -157,6 +157,7 @@ plugins/
 *.yml
 !requirements.yaml
 !requirements.yml
+!docker-compose.yml
 
 # IDE
 .vscode/

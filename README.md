@@ -25,6 +25,11 @@ MLflow-IBM-HR-Analytics
 |       |   |── optimization.py # optimizacion de hiperparámetros
 |   |── pipeline.py             # archivo que lógica principal del pipeline del proyecto
 |
+├── 02-Deployment/
+|   |── web-service/
+|       |── app.py              # API FastAPI que sirve el modelo champion
+|       |── static/index.html   # página CRUD de empleados con su predicción
+|
 ├── src/            
 |   |── __init__.py             # archivo inicializador 
 ├── python-version              # version de python utilizada
@@ -88,6 +93,34 @@ Acceder a la aplicación a traves de los puertos definidos en los contenedores, 
 http://localhost:5000
 
 ```
+
+### 5. API de predicción (FastAPI)
+El contenedor `ibm-hr-api` carga desde MLflow la versión con alias `champion` de
+`IBM-Attrition-Predictor` y expone un endpoint para predecir la rotación de un empleado.
+La primera predicción falla con `503` si el pipeline todavía no ha registrado un modelo.
+
+Página web para registrar, editar y eliminar empleados y ver su probabilidad de rotación
+(los empleados se guardan en SQLite, en el volumen `api-data`):
+```
+http://localhost:8000
+```
+
+Documentación interactiva (Swagger), con un ejemplo listo para probar:
+```
+http://localhost:8000/docs
+```
+
+Ejemplo con curl:
+```
+curl -X POST http://localhost:8000/predict -H "Content-Type: application/json" -d '{"Age":41,"BusinessTravel":"Travel_Rarely","DailyRate":1102,"Department":"Sales","DistanceFromHome":1,"Education":2,"EducationField":"Life Sciences","EnvironmentSatisfaction":2,"Gender":"Female","HourlyRate":94,"JobInvolvement":3,"JobLevel":2,"JobRole":"Sales Executive","JobSatisfaction":4,"MaritalStatus":"Single","MonthlyIncome":5993,"MonthlyRate":19479,"NumCompaniesWorked":8,"OverTime":"Yes","PercentSalaryHike":11,"PerformanceRating":3,"RelationshipSatisfaction":1,"StockOptionLevel":0,"TotalWorkingYears":8,"TrainingTimesLastYear":0,"WorkLifeBalance":1,"YearsAtCompany":6,"YearsInCurrentRole":4,"YearsSinceLastPromotion":0,"YearsWithCurrManager":5}'
+```
+
+Respuesta:
+```
+{"attrition_probability": 0.572, "attrition": "Yes", "threshold": 0.5, "model_version": "2"}
+```
+`attrition_probability` es el score del modelo recortado a [0, 1]; si supera el umbral
+(`ATTRITION_THRESHOLD`, 0.5 por defecto) la predicción es `"Yes"`.
 
 # AUTOR(ES) 
 * Kelly Zenith Panizza Ordoñez
